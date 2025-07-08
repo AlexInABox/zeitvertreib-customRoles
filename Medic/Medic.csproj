@@ -13,9 +13,10 @@
         <Reference Include="UnityEngine.CoreModule" HintPath="$(REFERENCES_PATH)\UnityEngine.CoreModule.dll" Private="false"/>
         <Reference Include="UnityEngine.PhysicsModule" HintPath="$(REFERENCES_PATH)\UnityEngine.PhysicsModule.dll" Private="false"/>
         <Reference Include="CommandSystem.Core" HintPath="$(REFERENCES_PATH)\CommandSystem.Core.dll" Private="false"/>
+        <Reference Include="UncomplicatedCustomRoles" HintPath="$(REFERENCES_PATH)\UncomplicatedCustomRoles.dll" Private="false"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Northwood.LabAPI" Version="1.0.2"/>
+        <PackageReference Include="ExMod.Exiled" Version="9.6.3" />
     </ItemGroup>
 </Project>

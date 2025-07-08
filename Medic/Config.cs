@@ -1,10 +1,19 @@
+using System.Collections.Generic;
 using System.ComponentModel;
+
+using Exiled.API.Features;
+using Exiled.API.Interfaces;
+
+using InventorySystem.Items.Firearms.Attachments;
+
 using UnityEngine;
 
-namespace Sized;
+namespace Medic;
 
-public class Config
+public sealed class Config : IConfig
 {
+    public bool IsEnabled { get; set; } = true;
+    
     public bool Debug { get; set; } = false;
 
     [Description("The maximum size a player can spawn with.")]
@@ -12,7 +21,5 @@ public class Config
 
     [Description("The minimum size a player can spawn with.")]
     public Vector3 MinimumSize { get; set; } = new(0.7f, 0.7f, 0.7f);
-
-    [Description("Should the random size only be applied to humans?")]
-    public bool OnlyHumans { get; set; } = true;
+    public int KeybindId { get; set; } = 205;
 }

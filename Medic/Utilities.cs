@@ -3,7 +3,7 @@ using LabApi.Features.Wrappers;
 using Mirror;
 using UnityEngine;
 
-namespace Sized;
+namespace Medic;
 
 public static class Utilities
 {
