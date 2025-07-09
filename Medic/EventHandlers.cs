@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Exiled.API.Features;
 using Medic.Modules;
 using UncomplicatedCustomRoles.API.Features;
@@ -13,12 +14,25 @@ public static class EventHandlers
     {
         ServerSpecificSettingsSync.ServerOnSettingValueReceived += OnSSSReceived;
         
-        ServerSpecificSettingsSync.DefinedSettings =
-        [
+        var extra = new ServerSpecificSettingBase[]
+        {
             new SSGroupHeader("Medic Fähigkeiten"),
-            new SSKeybindSetting(Plugin.Instance.Config.KeybindId, Plugin.Instance.Translation.KeybindSettingLabel, KeyCode.None, false, false,
-                Plugin.Instance.Translation.KeybindSettingHintDescription)];
-        ServerSpecificSettingsSync.SendToAll();
+            new SSKeybindSetting(
+                Plugin.Instance.Config.KeybindId,
+                Plugin.Instance.Translation.KeybindSettingLabel,
+                KeyCode.None, false, false,
+                Plugin.Instance.Translation.KeybindSettingHintDescription)
+        };
+
+        var existing = ServerSpecificSettingsSync.DefinedSettings ?? [];
+
+        var combined = new ServerSpecificSettingBase[existing.Length + extra.Length];
+        existing.CopyTo(combined, 0);
+        extra.CopyTo(combined, existing.Length);
+
+        ServerSpecificSettingsSync.DefinedSettings = combined;
+        ServerSpecificSettingsSync.UpdateDefinedSettings();
+
     }
     public static void UnRegisterEvents()
     {
@@ -37,12 +51,25 @@ public static class EventHandlers
             UseMedicAbility(player);
     }
     
+    private static readonly Dictionary<int, float> EffectCooldowns = new();
     private static void UseMedicAbility(Player player)
     {
         if (!player.TryGetSummonedInstance(out SummonedCustomRole role)) 
             return;
 
-        if (role.TryGetModule(out MedicAbilities module))
-            module.Execute();
+
+
+        if (!role.TryGetModule(out MedicAbilities module))
+            return;
+        
+        if (EffectCooldowns.TryGetValue(player.Id, out float cooldown) && cooldown > Time.time)
+        {
+            player.ShowHint(Plugin.Instance.Translation.AbilityOnCooldown, 1.5f);
+            return;
+        }
+        
+        module.Execute();
+        player.ShowHint(Plugin.Instance.Translation.AbilityUsed, 1.5f);
+        EffectCooldowns[player.Id] = Time.time + Plugin.Instance.Config.CooldownDuration;
     }
 }
