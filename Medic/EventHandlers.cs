@@ -57,8 +57,6 @@ public static class EventHandlers
         if (!player.TryGetSummonedInstance(out SummonedCustomRole role)) 
             return;
 
-
-
         if (!role.TryGetModule(out MedicAbilities module))
             return;
         

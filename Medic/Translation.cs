@@ -11,5 +11,5 @@ public class Translation : ITranslation
     
     public string AbilityOnCooldown { get; set; } = "<color=yellow>Your Medic ability is on cooldown! Please wait before using it again.</color>";
     
-    public string AbilityUsed { get; set; } = "<color=green>You have used your Medic ability!</color>";
+    public string AbilityUsed { get; set; } = "<color=green>You are using your Medic ability!</color>";
 }
