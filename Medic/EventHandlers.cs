@@ -3,18 +3,20 @@ using Exiled.API.Features;
 using Medic.Modules;
 using UncomplicatedCustomRoles.API.Features;
 using UncomplicatedCustomRoles.Extensions;
-using UserSettings.ServerSpecific;
 using UnityEngine;
+using UserSettings.ServerSpecific;
 
 namespace Medic;
 
 public static class EventHandlers
 {
+    private static readonly Dictionary<int, float> EffectCooldowns = new();
+
     public static void RegisterEvents()
     {
         ServerSpecificSettingsSync.ServerOnSettingValueReceived += OnSSSReceived;
-        
-        var extra = new ServerSpecificSettingBase[]
+
+        ServerSpecificSettingBase[] extra = new ServerSpecificSettingBase[]
         {
             new SSGroupHeader("Medic Fähigkeiten"),
             new SSKeybindSetting(
@@ -24,16 +26,16 @@ public static class EventHandlers
                 Plugin.Instance.Translation.KeybindSettingHintDescription)
         };
 
-        var existing = ServerSpecificSettingsSync.DefinedSettings ?? [];
+        ServerSpecificSettingBase[] existing = ServerSpecificSettingsSync.DefinedSettings ?? [];
 
-        var combined = new ServerSpecificSettingBase[existing.Length + extra.Length];
+        ServerSpecificSettingBase[] combined = new ServerSpecificSettingBase[existing.Length + extra.Length];
         existing.CopyTo(combined, 0);
         extra.CopyTo(combined, existing.Length);
 
         ServerSpecificSettingsSync.DefinedSettings = combined;
         ServerSpecificSettingsSync.UpdateDefinedSettings();
-
     }
+
     public static void UnRegisterEvents()
     {
         ServerSpecificSettingsSync.ServerOnSettingValueReceived -= OnSSSReceived;
@@ -43,29 +45,28 @@ public static class EventHandlers
     {
         if (!Player.TryGet(hub.networkIdentity, out Player player))
             return;
-        
+
         // Check if the setting is the keybind setting and if it is pressed
         if (ev is SSKeybindSetting keybindSetting &&
             keybindSetting.SettingId == Plugin.Instance.Config.KeybindId &&
             keybindSetting.SyncIsPressed)
             UseMedicAbility(player);
     }
-    
-    private static readonly Dictionary<int, float> EffectCooldowns = new();
+
     private static void UseMedicAbility(Player player)
     {
-        if (!player.TryGetSummonedInstance(out SummonedCustomRole role)) 
+        if (!player.TryGetSummonedInstance(out SummonedCustomRole role))
             return;
 
         if (!role.TryGetModule(out MedicAbilities module))
             return;
-        
+
         if (EffectCooldowns.TryGetValue(player.Id, out float cooldown) && cooldown > Time.time)
         {
             player.ShowHint(Plugin.Instance.Translation.AbilityOnCooldown, 1.5f);
             return;
         }
-        
+
         module.Execute();
         player.ShowHint(Plugin.Instance.Translation.AbilityUsed, 1.5f);
         EffectCooldowns[player.Id] = Time.time + Plugin.Instance.Config.CooldownDuration;
