@@ -1,6 +1,6 @@
 using Exiled.API.Interfaces;
 
-namespace Medic;
+namespace ZeitvertreibCustomRoles;
 
 public class Translation : ITranslation
 {

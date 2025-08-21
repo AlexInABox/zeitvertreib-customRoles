@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using Exiled.API.Features;
 using MEC;
+using PlayerRoles;
 using UncomplicatedCustomRoles.API.Features.CustomModules;
 using UnityEngine;
 using Light = Exiled.API.Features.Toys.Light;
+using static Exiled.API.Extensions.MirrorExtensions;
 
-namespace Medic.Modules;
+namespace ZeitvertreibCustomRoles.Modules;
 
-public class MedicAbilities : CustomModule
+// ReSharper disable once ClassNeverInstantiated.Global
+public class Medic : CustomModule
 {
     private bool _abilityActive;
 
@@ -16,6 +19,7 @@ public class MedicAbilities : CustomModule
         CustomRole.Player.ShowHint(Plugin.Instance.Translation.AbilityUsed, 1.5f);
         Timing.RunCoroutine(HealNearbyAlliesOverTime());
         Timing.RunCoroutine(ShowHealingBubble());
+        Timing.RunCoroutine(ShowHealthStats());
     }
 
     private IEnumerator<float> HealNearbyAlliesOverTime()
@@ -48,8 +52,8 @@ public class MedicAbilities : CustomModule
 
             nearbyPlayer.Heal(1F);
             Log.Debug($"{CustomRole.Player.Nickname} just healed {nearbyPlayer.Nickname} for 1 HP.");
-            
-            if(nearbyPlayer == CustomRole.Player) continue;
+
+            if (nearbyPlayer == CustomRole.Player) continue;
             nearbyPlayer.ShowHint($"<color=green>Du wirst gerade von {CustomRole.Player.Nickname} geheilt!</color>",
                 healAmountMax / healDuration + 1f);
         }
@@ -66,11 +70,30 @@ public class MedicAbilities : CustomModule
         bubbleLight.GameObject.transform.SetParent(CustomRole.Player.GameObject.transform);
 
         while (_abilityActive)
-        {
             //bubbleLight.Position = CustomRole.Player.Position;
             yield return Timing.WaitForOneFrame;
-        }
 
         bubbleLight.Destroy();
+    }
+
+    private IEnumerator<float> ShowHealthStats()
+    {
+        while (CustomRole.Player.IsAlive)
+        {
+            foreach (Player player in Player.List)
+            {
+                if (!player.IsAlive || player.IsNPC || player.IsHost || player == CustomRole.Player) continue;
+
+                if (player.Role == RoleTypeId.Scp3114)
+                {
+                    player.SetPlayerInfoForTargetOnly(CustomRole.Player, "100/100 HP");
+                    continue;
+                }
+
+                player.SetPlayerInfoForTargetOnly(CustomRole.Player, $"{player.Health}/{player.MaxHealth} HP");
+            }
+
+            yield return Timing.WaitForSeconds(1f);
+        }
     }
 }

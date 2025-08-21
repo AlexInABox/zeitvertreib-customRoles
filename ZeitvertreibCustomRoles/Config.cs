@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using Exiled.API.Interfaces;
 
-namespace Medic;
+namespace ZeitvertreibCustomRoles;
 
 public sealed class Config : IConfig
 {
-    [Description("The cooldown duration for the Medic ability in seconds.")]
+    [Description("The cooldown duration for the medic ability in seconds.")]
     public float CooldownDuration { get; set; } = 300f;
 
     public int KeybindId { get; set; } = 205;

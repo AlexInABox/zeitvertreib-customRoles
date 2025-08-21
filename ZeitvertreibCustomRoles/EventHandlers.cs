@@ -1,12 +1,16 @@
 using System.Collections.Generic;
-using Exiled.API.Features;
-using Medic.Modules;
+using Exiled.Events.EventArgs.Player;
+using MEC;
+using Mirror;
 using UncomplicatedCustomRoles.API.Features;
 using UncomplicatedCustomRoles.Extensions;
 using UnityEngine;
 using UserSettings.ServerSpecific;
+using ZeitvertreibCustomRoles.Modules;
+using Item = Exiled.API.Features.Items.Item;
+using Player = Exiled.API.Features.Player;
 
-namespace Medic;
+namespace ZeitvertreibCustomRoles;
 
 public static class EventHandlers
 {
@@ -34,11 +38,17 @@ public static class EventHandlers
 
         ServerSpecificSettingsSync.DefinedSettings = combined;
         ServerSpecificSettingsSync.UpdateDefinedSettings();
+
+
+        Exiled.Events.Handlers.Player.Spawned += OnSpawned;
+        Exiled.Events.Handlers.Player.Spawning += OnSpawning;
     }
 
     public static void UnRegisterEvents()
     {
         ServerSpecificSettingsSync.ServerOnSettingValueReceived -= OnSSSReceived;
+        Exiled.Events.Handlers.Player.Spawned -= OnSpawned;
+        Exiled.Events.Handlers.Player.Spawning -= OnSpawning;
     }
 
     private static void OnSSSReceived(ReferenceHub hub, ServerSpecificSettingBase ev)
@@ -53,12 +63,40 @@ public static class EventHandlers
             UseMedicAbility(player);
     }
 
+    private static void OnSpawned(SpawnedEventArgs ev)
+    {
+        // We have to wait for UCR to finish initializing the players custom role
+        Timing.CallDelayed(1f, () =>
+        {
+            if (!ev.Player.TryGetSummonedInstance(out SummonedCustomRole role))
+                return;
+
+            if (role.TryGetModule(out PinkCandy pinkCandyModule))
+                pinkCandyModule.Execute();
+        });
+    }
+
+    private static void OnSpawning(SpawningEventArgs ev)
+    {
+        List<Item> previousItems = [];
+        ev.Player.Items.CopyTo(previousItems);
+        // We have to wait for UCR to finish initializing the players custom role
+        Timing.CallDelayed(2f, () =>
+        {
+            if (!ev.Player.TryGetSummonedInstance(out SummonedCustomRole role))
+                return;
+
+            if (role.TryGetModule(out KeepPreviousInventory keepPreviousInventoryModule))
+                keepPreviousInventoryModule.Execute(previousItems);
+        });
+    }
+
     private static void UseMedicAbility(Player player)
     {
         if (!player.TryGetSummonedInstance(out SummonedCustomRole role))
             return;
 
-        if (!role.TryGetModule(out MedicAbilities module))
+        if (!role.TryGetModule(out Medic module))
             return;
 
         if (EffectCooldowns.TryGetValue(player.Id, out float cooldown) && cooldown > Time.time)
