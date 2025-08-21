@@ -10,6 +10,7 @@ env:
   REFERENCES_URL: https://dev.zeitvertreib.vip/assets/buildtools/scpsl-references.zip
   EXILED_REFERENCES: ${{ github.workspace }}/References
   AUDIO_PLAYER_API_URL: https://github.com/Killers0992/AudioPlayerApi/releases/download/1.0.9/dependencies.zip
+  UCR_URL: https://github.com/UncomplicatedCustomServer/UncomplicatedCustomRoles/releases/download/v9.0.0/UncomplicatedCustomRoles-EXILED.dll
 
 jobs:
   build:
@@ -41,6 +42,9 @@ jobs:
               Copy-Item -Path $_.FullName -Destination $target
             }
           }
+
+          # Download UncomplicatedCustomRoles dependency
+          Invoke-WebRequest -Uri $env:UCR_URL -OutFile "$env:EXILED_REFERENCES/UncomplicatedCustomRoles-EXILED.dll" -ErrorAction Stop
 
       - name: 🧱 Setup MSBuild
         uses: microsoft/setup-msbuild@v2
