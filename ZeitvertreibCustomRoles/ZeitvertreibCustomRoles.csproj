@@ -7,13 +7,13 @@
 
     <ItemGroup>
         <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" ExcludeAssets="runtime" ReferenceOutputAssembly="false" Private="true"/>
-        <Reference Include="Assembly-CSharp" HintPath="$(REFERENCES_PATH)\Assembly-CSharp.dll" Publicize="true"/>
-        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(REFERENCES_PATH)\Assembly-CSharp-firstpass.dll" Private="false"/>
-        <Reference Include="Mirror" HintPath="$(REFERENCES_PATH)\Mirror.dll" Private="false" Publicize="true"/>
-        <Reference Include="UnityEngine.CoreModule" HintPath="$(REFERENCES_PATH)\UnityEngine.CoreModule.dll" Private="false"/>
-        <Reference Include="UnityEngine.PhysicsModule" HintPath="$(REFERENCES_PATH)\UnityEngine.PhysicsModule.dll" Private="false"/>
-        <Reference Include="CommandSystem.Core" HintPath="$(REFERENCES_PATH)\CommandSystem.Core.dll" Private="false"/>
-        <Reference Include="UncomplicatedCustomRoles" HintPath="$(REFERENCES_PATH)\UncomplicatedCustomRoles.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp.dll" Publicize="true"/>
+        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(EXILED_REFERENCES)\Assembly-CSharp-firstpass.dll" Private="false"/>
+        <Reference Include="Mirror" HintPath="$(EXILED_REFERENCES)\Mirror.dll" Private="false" Publicize="true"/>
+        <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.CoreModule.dll" Private="false"/>
+        <Reference Include="UnityEngine.PhysicsModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.PhysicsModule.dll" Private="false"/>
+        <Reference Include="CommandSystem.Core" HintPath="$(EXILED_REFERENCES)\CommandSystem.Core.dll" Private="false"/>
+        <Reference Include="UncomplicatedCustomRoles" HintPath="$(EXILED_REFERENCES)\UncomplicatedCustomRoles.dll" Private="false"/>
     </ItemGroup>
 
     <ItemGroup>
