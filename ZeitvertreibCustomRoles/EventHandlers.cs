@@ -70,6 +70,9 @@ public static class EventHandlers
         {
             if (!ev.Player.TryGetSummonedInstance(out SummonedCustomRole role))
                 return;
+            
+            if (role.TryGetModule(out Medic medicModule))
+                medicModule.Spawned();
 
             if (role.TryGetModule(out PinkCandy pinkCandyModule))
                 pinkCandyModule.Execute();

@@ -11,7 +11,7 @@ public class Plugin : Plugin<Config, Translation>
 
     public override string Name { get; } = "zeitvertreib-custom-roles";
     public override string Author { get; } = "AlexInABox";
-    public override Version Version { get; } = new(1, 2, 0);
+    public override Version Version { get; } = new(1, 2, 1);
     public override PluginPriority Priority { get; } = PluginPriority.Last;
 
     /// <inheritdoc />

@@ -19,6 +19,10 @@ public class Medic : CustomModule
         CustomRole.Player.ShowHint(Plugin.Instance.Translation.AbilityUsed, 1.5f);
         Timing.RunCoroutine(HealNearbyAlliesOverTime());
         Timing.RunCoroutine(ShowHealingBubble());
+    }
+
+    public void Spawned()
+    {
         Timing.RunCoroutine(ShowHealthStats());
     }
 
@@ -51,7 +55,6 @@ public class Medic : CustomModule
             if (nearbyPlayer.Role.Side != CustomRole.Player.Role.Side) continue;
 
             nearbyPlayer.Heal(1F);
-            Log.Debug($"{CustomRole.Player.Nickname} just healed {nearbyPlayer.Nickname} for 1 HP.");
 
             if (nearbyPlayer == CustomRole.Player) continue;
             nearbyPlayer.ShowHint($"<color=green>Du wirst gerade von {CustomRole.Player.Nickname} geheilt!</color>",
@@ -86,11 +89,11 @@ public class Medic : CustomModule
 
                 if (player.Role == RoleTypeId.Scp3114)
                 {
-                    player.SetPlayerInfoForTargetOnly(CustomRole.Player, "100/100 HP");
+                    CustomRole.Player.SetPlayerInfoForTargetOnly(player, "100/100 HP");
                     continue;
                 }
-
-                player.SetPlayerInfoForTargetOnly(CustomRole.Player, $"{player.Health}/{player.MaxHealth} HP");
+                
+                CustomRole.Player.SetPlayerInfoForTargetOnly(player, $"{player.Health}/{player.MaxHealth} HP");
             }
 
             yield return Timing.WaitForSeconds(1f);
