@@ -92,7 +92,7 @@ public class Medic : CustomModule
                     CustomRole.Player.SetPlayerInfoForTargetOnly(player, "100/100 HP");
                     continue;
                 }
-                
+
                 CustomRole.Player.SetPlayerInfoForTargetOnly(player, $"{player.Health}/{player.MaxHealth} HP");
             }
 

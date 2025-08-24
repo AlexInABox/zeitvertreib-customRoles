@@ -1,7 +1,13 @@
 using System.Collections.Generic;
+using Exiled.API.Features.DamageHandlers;
 using Exiled.Events.EventArgs.Player;
+using Footprinting;
+using InventorySystem.Items;
+using InventorySystem.Items.Firearms.Modules;
+using InventorySystem.Items.Firearms.ShotEvents;
 using MEC;
 using Mirror;
+using PlayerStatsSystem;
 using UncomplicatedCustomRoles.API.Features;
 using UncomplicatedCustomRoles.Extensions;
 using UnityEngine;
@@ -15,6 +21,7 @@ namespace ZeitvertreibCustomRoles;
 public static class EventHandlers
 {
     private static readonly Dictionary<int, float> EffectCooldowns = new();
+    private static readonly List<Player> DeathSquadPlayersToDisintegrateOnDeath = [];
 
     public static void RegisterEvents()
     {
@@ -42,6 +49,8 @@ public static class EventHandlers
 
         Exiled.Events.Handlers.Player.Spawned += OnSpawned;
         Exiled.Events.Handlers.Player.Spawning += OnSpawning;
+        Exiled.Events.Handlers.Player.Dying += OnDying;
+        Exiled.Events.Handlers.Player.Died += OnDied;
     }
 
     public static void UnRegisterEvents()
@@ -49,6 +58,8 @@ public static class EventHandlers
         ServerSpecificSettingsSync.ServerOnSettingValueReceived -= OnSSSReceived;
         Exiled.Events.Handlers.Player.Spawned -= OnSpawned;
         Exiled.Events.Handlers.Player.Spawning -= OnSpawning;
+        Exiled.Events.Handlers.Player.Dying -= OnDying;
+        Exiled.Events.Handlers.Player.Died -= OnDied;
     }
 
     private static void OnSSSReceived(ReferenceHub hub, ServerSpecificSettingBase ev)
@@ -70,7 +81,7 @@ public static class EventHandlers
         {
             if (!ev.Player.TryGetSummonedInstance(out SummonedCustomRole role))
                 return;
-            
+
             if (role.TryGetModule(out Medic medicModule))
                 medicModule.Spawned();
 
@@ -92,6 +103,31 @@ public static class EventHandlers
             if (role.TryGetModule(out KeepPreviousInventory keepPreviousInventoryModule))
                 keepPreviousInventoryModule.Execute(previousItems);
         });
+    }
+
+    private static void OnDying(DyingEventArgs ev)
+    {
+        if (!ev.Player.TryGetSummonedInstance(out SummonedCustomRole role))
+            return;
+        if (role.TryGetModule(out Deathsquad _))
+        {
+            ev.Player.ClearInventory();
+            DeathSquadPlayersToDisintegrateOnDeath.Add(ev.Player);
+        }
+    }
+
+    private static void OnDied(DiedEventArgs ev)
+    {
+        if (DeathSquadPlayersToDisintegrateOnDeath.Contains(ev.Player))
+        {
+            DeathSquadPlayersToDisintegrateOnDeath.Remove(ev.Player);
+            ev.Ragdoll.DamageHandler = new CustomDamageHandler(ev.Player,
+                new DisruptorDamageHandler(
+                    new DisruptorShotEvent(ItemIdentifier.None, new Footprint(ev.Attacker.ReferenceHub),
+                        DisruptorActionModule.FiringState.FiringSingle), Vector3.up, 999f));
+
+            ev.Ragdoll.IsConsumed = true;
+        }
     }
 
     private static void UseMedicAbility(Player player)
