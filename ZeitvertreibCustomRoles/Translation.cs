@@ -4,13 +4,13 @@ namespace ZeitvertreibCustomRoles;
 
 public class Translation : ITranslation
 {
-    public string KeybindSettingLabel { get; set; } = "Use your Medic ability!";
+    public string KeybindSettingLabel { get; set; } = "Benutze deine Medic-Fähigkeit!";
 
     public string KeybindSettingHintDescription { get; set; } =
-        "Pressing this will activate your Medic ability. I have no idea what it does, but it sounds cool!";
+        "Drücke dies, um deine Medic-Fähigkeit zu aktivieren. Ich habe keine Ahnung, was sie tut, aber es klingt cool!";
 
     public string AbilityOnCooldown { get; set; } =
-        "<color=yellow>Your Medic ability is on cooldown! Please wait before using it again.</color>";
+        "<color=yellow>Deine Medic-Fähigkeit ist gerade im Cooldown! Bitte warte, bevor du sie erneut benutzt.</color>";
 
-    public string AbilityUsed { get; set; } = "<color=green>You are using your Medic ability!</color>";
+    public string AbilityUsed { get; set; } = "<color=green>Du benutzt deine Medic-Fähigkeit!</color>";
 }
