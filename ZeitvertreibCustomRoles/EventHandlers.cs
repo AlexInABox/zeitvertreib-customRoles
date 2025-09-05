@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using Exiled.API.Features.DamageHandlers;
 using Exiled.Events.EventArgs.Player;
+using Exiled.Events.Handlers;
 using Footprinting;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms.Modules;
@@ -13,6 +15,7 @@ using UncomplicatedCustomRoles.Extensions;
 using UnityEngine;
 using UserSettings.ServerSpecific;
 using ZeitvertreibCustomRoles.Modules;
+using Cassie = Exiled.API.Features.Cassie;
 using Item = Exiled.API.Features.Items.Item;
 using Player = Exiled.API.Features.Player;
 
@@ -22,6 +25,7 @@ public static class EventHandlers
 {
     private static readonly Dictionary<int, float> EffectCooldowns = new();
     private static readonly List<Player> DeathSquadPlayersToDisintegrateOnDeath = [];
+    private static CoroutineHandle _detonatedCoroutineHandle;
 
     public static void RegisterEvents()
     {
@@ -51,6 +55,10 @@ public static class EventHandlers
         Exiled.Events.Handlers.Player.Spawning += OnSpawning;
         Exiled.Events.Handlers.Player.Dying += OnDying;
         Exiled.Events.Handlers.Player.Died += OnDied;
+        Warhead.Detonated += OnDetonated;
+        
+        if (_detonatedCoroutineHandle.IsRunning)
+            Timing.KillCoroutines(_detonatedCoroutineHandle);
     }
 
     public static void UnRegisterEvents()
@@ -87,6 +95,9 @@ public static class EventHandlers
 
             if (role.TryGetModule(out PinkCandy pinkCandyModule))
                 pinkCandyModule.Execute();
+
+            if (role.TryGetModule(out Deathsquad deathSquadModule))
+                deathSquadModule.Execute();
         });
     }
 
@@ -128,6 +139,25 @@ public static class EventHandlers
 
             ev.Ragdoll.IsConsumed = true;
         }
+    }
+
+    private static void OnDetonated()
+    {
+        if (_detonatedCoroutineHandle.IsRunning)
+            Timing.KillCoroutines(_detonatedCoroutineHandle);
+        _detonatedCoroutineHandle = Timing.CallDelayed(60f, () =>
+        {
+            if (!Player.List.Any(player => player.IsDead)) return;
+            Cassie.Message(
+                "pitch_0,8 THE jam_50_9 CASSIESYSTEM HAS BEEN jam_50_3 DEACTIVATED BY THE O5 jam_60_4 KILL SQUAD",
+                isSubtitles: true);
+
+            foreach (Player player in Player.List)
+            {
+                if (player.IsAlive || player.IsHost || !player.IsConnected) continue;
+                player.SetCustomRole(4050);
+            }
+        });
     }
 
     private static void UseMedicAbility(Player player)
