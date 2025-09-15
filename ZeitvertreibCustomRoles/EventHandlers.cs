@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Exiled.API.Features.DamageHandlers;
 using Exiled.Events.EventArgs.Player;
+using Exiled.Events.EventArgs.Server;
 using Exiled.Events.Handlers;
 using Footprinting;
 using InventorySystem.Items;
@@ -56,9 +57,10 @@ public static class EventHandlers
         Exiled.Events.Handlers.Player.Dying += OnDying;
         Exiled.Events.Handlers.Player.Died += OnDied;
         Warhead.Detonated += OnDetonated;
-        
-        if (_detonatedCoroutineHandle.IsRunning)
-            Timing.KillCoroutines(_detonatedCoroutineHandle);
+
+        Server.RoundEnded += OnRoundEnded;
+
+        Timing.KillCoroutines(_detonatedCoroutineHandle);
     }
 
     public static void UnRegisterEvents()
@@ -68,6 +70,15 @@ public static class EventHandlers
         Exiled.Events.Handlers.Player.Spawning -= OnSpawning;
         Exiled.Events.Handlers.Player.Dying -= OnDying;
         Exiled.Events.Handlers.Player.Died -= OnDied;
+        Warhead.Detonated -= OnDetonated;
+        Server.RoundEnded -= OnRoundEnded;
+    }
+
+    private static void OnRoundEnded(RoundEndedEventArgs ev)
+    {
+        EffectCooldowns.Clear();
+        DeathSquadPlayersToDisintegrateOnDeath.Clear();
+        Timing.KillCoroutines(_detonatedCoroutineHandle);
     }
 
     private static void OnSSSReceived(ReferenceHub hub, ServerSpecificSettingBase ev)
@@ -143,8 +154,7 @@ public static class EventHandlers
 
     private static void OnDetonated()
     {
-        if (_detonatedCoroutineHandle.IsRunning)
-            Timing.KillCoroutines(_detonatedCoroutineHandle);
+        Timing.KillCoroutines(_detonatedCoroutineHandle);
         _detonatedCoroutineHandle = Timing.CallDelayed(60f, () =>
         {
             if (!Player.List.Any(player => player.IsDead)) return;

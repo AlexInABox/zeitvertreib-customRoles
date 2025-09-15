@@ -20,13 +20,13 @@ public class Deathsquad : CustomModule
     {
         Logger.Info("Showing Deathsquad Aura");
         Light auraLight = Light.Create(CustomRole.Player.Position, null, null, true, Color.blue);
-        auraLight.Range = 2f;
-        auraLight.Intensity = 0.5f;
+        auraLight.Range = 3f;
+        auraLight.Intensity = 0.8f;
         auraLight.ShadowType = LightShadows.None;
         auraLight.ShadowStrength = 0f;
         auraLight.GameObject.transform.SetParent(CustomRole.Player.GameObject.transform);
 
-        while (CustomRole.Player.IsAlive) yield return Timing.WaitForOneFrame;
+        while (CustomRole.Player.IsAlive) yield return Timing.WaitForSeconds(1f);
         auraLight.Destroy();
     }
 }
