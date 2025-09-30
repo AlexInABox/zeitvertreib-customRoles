@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Exiled.API.Features.DamageHandlers;
@@ -11,6 +12,7 @@ using InventorySystem.Items.Firearms.ShotEvents;
 using MEC;
 using Mirror;
 using PlayerStatsSystem;
+using Respawning;
 using UncomplicatedCustomRoles.API.Features;
 using UncomplicatedCustomRoles.Extensions;
 using UnityEngine;
@@ -24,7 +26,7 @@ namespace ZeitvertreibCustomRoles;
 
 public static class EventHandlers
 {
-    private static readonly Dictionary<int, float> EffectCooldowns = new();
+    private static readonly Dictionary<int, long> EffectCooldowns = new();
     private static readonly List<Player> DeathSquadPlayersToDisintegrateOnDeath = [];
     private static CoroutineHandle _detonatedCoroutineHandle;
 
@@ -58,6 +60,8 @@ public static class EventHandlers
         Exiled.Events.Handlers.Player.Died += OnDied;
         Warhead.Detonated += OnDetonated;
 
+
+        Server.WaitingForPlayers += OnWaitingForPlayers;
         Server.RoundEnded += OnRoundEnded;
 
         Timing.KillCoroutines(_detonatedCoroutineHandle);
@@ -71,7 +75,15 @@ public static class EventHandlers
         Exiled.Events.Handlers.Player.Dying -= OnDying;
         Exiled.Events.Handlers.Player.Died -= OnDied;
         Warhead.Detonated -= OnDetonated;
+        Server.WaitingForPlayers -= OnWaitingForPlayers;
         Server.RoundEnded -= OnRoundEnded;
+    }
+
+    private static void OnWaitingForPlayers()
+    {
+        EffectCooldowns.Clear();
+        DeathSquadPlayersToDisintegrateOnDeath.Clear();
+        Timing.KillCoroutines(_detonatedCoroutineHandle);
     }
 
     private static void OnRoundEnded(RoundEndedEventArgs ev)
@@ -155,12 +167,14 @@ public static class EventHandlers
     private static void OnDetonated()
     {
         Timing.KillCoroutines(_detonatedCoroutineHandle);
-        _detonatedCoroutineHandle = Timing.CallDelayed(60f, () =>
+        _detonatedCoroutineHandle = Timing.CallDelayed(100f, () =>
         {
             if (!Player.List.Any(player => player.IsDead)) return;
+            if (WaveManager.Waves.Count > 0) return;
+
             Cassie.Message(
                 "pitch_0,8 THE jam_50_9 CASSIESYSTEM HAS BEEN jam_50_3 DEACTIVATED BY THE O5 jam_60_4 KILL SQUAD",
-                isSubtitles: true);
+                isSubtitles: false, isNoisy: true);
 
             foreach (Player player in Player.List)
             {
@@ -178,14 +192,16 @@ public static class EventHandlers
         if (!role.TryGetModule(out Medic module))
             return;
 
-        if (EffectCooldowns.TryGetValue(player.Id, out float cooldown) && cooldown > Time.time)
+        long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (EffectCooldowns.TryGetValue(player.Id, out long cooldownMs) && cooldownMs > nowMs)
         {
-            player.ShowHint(Plugin.Instance.Translation.AbilityOnCooldown, 1.5f);
+            double remaining = (cooldownMs - nowMs) / 1000.0;
+            player.ShowHint($"<color=yellow>Medic Fähigkeit ist gerade im Cooldown! ({remaining:F1}s)</color>", 1.5f);
             return;
         }
 
         module.Execute();
         player.ShowHint(Plugin.Instance.Translation.AbilityUsed, 1.5f);
-        EffectCooldowns[player.Id] = Time.time + Plugin.Instance.Config.CooldownDuration;
+        EffectCooldowns[player.Id] = nowMs + 70000; // 70s in ms
     }
 }
