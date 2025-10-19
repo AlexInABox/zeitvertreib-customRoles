@@ -4,15 +4,14 @@ using System.Linq;
 using Exiled.API.Features.DamageHandlers;
 using Exiled.Events.EventArgs.Player;
 using Exiled.Events.EventArgs.Server;
-using Exiled.Events.Handlers;
 using Footprinting;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms.Modules;
 using InventorySystem.Items.Firearms.ShotEvents;
+using LabApi.Features.Wrappers;
 using MEC;
 using Mirror;
 using PlayerStatsSystem;
-using Respawning;
 using UncomplicatedCustomRoles.API.Features;
 using UncomplicatedCustomRoles.Extensions;
 using UnityEngine;
@@ -20,7 +19,10 @@ using UserSettings.ServerSpecific;
 using ZeitvertreibCustomRoles.Modules;
 using Cassie = Exiled.API.Features.Cassie;
 using Item = Exiled.API.Features.Items.Item;
+using Logger = LabApi.Features.Console.Logger;
 using Player = Exiled.API.Features.Player;
+using Server = Exiled.Events.Handlers.Server;
+using Warhead = Exiled.Events.Handlers.Warhead;
 
 namespace ZeitvertreibCustomRoles;
 
@@ -169,8 +171,16 @@ public static class EventHandlers
         Timing.KillCoroutines(_detonatedCoroutineHandle);
         _detonatedCoroutineHandle = Timing.CallDelayed(100f, () =>
         {
+            int mtfWaveTokens = RespawnWaves.PrimaryMtfWave!.RespawnTokens;
+            int chaosWaveTokens = RespawnWaves.PrimaryChaosWave!.RespawnTokens;
             if (!Player.List.Any(player => player.IsDead)) return;
-            if (WaveManager.Waves.Count > 0) return;
+
+            if (mtfWaveTokens > 0 && chaosWaveTokens > 0)
+            {
+                Logger.Info("Would've spawned Deathsquad but this is the Ticket status:");
+                Logger.Info("MTF Tokens: " + mtfWaveTokens + " | Chaos Tokens: " + chaosWaveTokens);
+                return;
+            }
 
             Cassie.Message(
                 "pitch_0,8 THE jam_50_9 CASSIESYSTEM HAS BEEN jam_50_3 DEACTIVATED BY THE O5 jam_60_4 KILL SQUAD",
